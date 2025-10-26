@@ -4,7 +4,7 @@ Ein komplettes Tool-Set zur Verarbeitung und Visualisierung von Schweizer Vermes
 
 ## 📦 Komponenten
 
-### 1. 🐍 Python Parser (`parser.py`)
+### 1. 🐍 Python Parser (`interlis1_webgis_parser_fixed.py`)
 Konvertiert INTERLIS1-Dateien zu WebGIS-kompatiblem GeoJSON.
 
 ### 2. 🌐 WebGIS (`index.html`)
