@@ -1,0 +1,2238 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INTERLIS1 WebGIS Professional</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet Measure CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-measure@3.1.0/dist/leaflet-measure.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #2c3e50;
+            color: #ecf0f1;
+        }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        .sidebar {
+            width: 400px;
+            background: #34495e;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+            padding: 20px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+            color: white;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .file-upload {
+            padding: 20px;
+            background: #2c3e50;
+            border-bottom: 1px solid #3498db;
+        }
+        
+        .upload-area {
+            border: 2px dashed #3498db;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(52, 152, 219, 0.1);
+        }
+        
+        .upload-area:hover {
+            background: rgba(52, 152, 219, 0.2);
+            border-color: #2980b9;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
+        
+        .upload-text {
+            color: #bdc3c7;
+            font-size: 14px;
+        }
+        
+        #fileInput {
+            display: none;
+        }
+        
+        .search-section {
+            padding: 15px;
+            background: #2c3e50;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .search-header h3 {
+            margin-bottom: 10px;
+            color: #3498db;
+            font-size: 16px;
+        }
+
+        .search-controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        #searchInput {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #34495e;
+            border-radius: 4px;
+            background: #34495e;
+            color: #ecf0f1;
+            font-size: 14px;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .search-btn {
+            padding: 8px 12px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .search-btn:hover {
+            background: #2980b9;
+        }
+
+        .search-results {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #34495e;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .search-result-item {
+            padding: 8px 12px;
+            border-bottom: 1px solid #2c3e50;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .search-result-item:hover {
+            background: #3498db;
+            color: white;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-type {
+            font-size: 11px;
+            color: #95a5a6;
+            margin-top: 2px;
+        }
+
+        .search-result-item:hover .result-type {
+            color: #ecf0f1;
+        }
+
+        .no-results {
+            padding: 12px;
+            text-align: center;
+            color: #95a5a6;
+            font-style: italic;
+        }
+        
+        .stats {
+            padding: 15px;
+            background: #2c3e50;
+            border-bottom: 1px solid #34495e;
+        }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .stat-item {
+            background: #34495e;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            border-left: 4px solid #3498db;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            color: #3498db;
+            font-size: 18px;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #bdc3c7;
+        }
+        
+        .layer-controls {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+        }
+        
+        .layer-group {
+            margin-bottom: 5px;
+        }
+        
+        .group-header {
+            background: #2c3e50;
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #34495e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+        }
+        
+        .group-header:hover {
+            background: #2c3e50;
+        }
+        
+        .group-count {
+            background: #3498db;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+        
+        .layer-list {
+            background: #2c3e50;
+            display: none;
+        }
+        
+        .layer-list.expanded {
+            display: block;
+        }
+        
+        .layer-item {
+            padding: 10px 15px 10px 30px;
+            border-bottom: 1px solid #34495e;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .layer-item:hover {
+            background: #34495e;
+        }
+        
+        .layer-checkbox {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .layer-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .layer-info {
+            flex: 1;
+        }
+        
+        .layer-name {
+            font-weight: 500;
+            font-size: 14px;
+            color: #ecf0f1;
+        }
+        
+        .layer-stats {
+            font-size: 11px;
+            color: #bdc3c7;
+        }
+        
+        .layer-count {
+            background: #7f8c8d;
+            color: white;
+            padding: 1px 6px;
+            border-radius: 8px;
+            font-size: 10px;
+        }
+        
+        .controls {
+            padding: 15px;
+            background: #2c3e50;
+            border-top: 1px solid #34495e;
+        }
+        
+        .control-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .control-btn {
+            padding: 10px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .control-btn:hover {
+            background: #2980b9;
+        }
+        
+        .control-btn.reset {
+            background: #e74c3c;
+        }
+        
+        .control-btn.reset:hover {
+            background: #c0392b;
+        }
+        
+        #map {
+            flex: 1;
+            height: 100vh;
+        }
+        
+        .leaflet-popup-content {
+            margin: 15px;
+            min-width: 250px;
+            color: #2c3e50;
+        }
+        
+        .popup-title {
+            font-weight: bold;
+            font-size: 16px;
+            color: #3498db;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+        
+        .popup-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+        
+        .popup-label {
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+        
+        .popup-value {
+            color: #2c3e50;
+            text-align: right;
+        }
+        
+        .error-message {
+            background: #e74c3c;
+            color: white;
+            padding: 15px;
+            margin: 15px;
+            border-radius: 8px;
+            border: 1px solid #c0392b;
+            display: none;
+        }
+        
+        .success-message {
+            background: #27ae60;
+            color: white;
+            padding: 15px;
+            margin: 15px;
+            border-radius: 8px;
+            border: 1px solid #229954;
+            display: none;
+        }
+        
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            z-index: 1000;
+            color: #2c3e50;
+            display: none;
+        }
+        
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #bdc3c7;
+            padding-bottom: 5px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        /* Pulsierender Marker */
+        .pulse-marker {
+            position: relative;
+        }
+
+        .pulse-ring {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #e74c3c;
+            border-radius: 50%;
+            animation: pulse-ring 2s ease-out infinite;
+        }
+
+        .pulse-dot {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 12px;
+            background: #e74c3c;
+            border: 2px solid white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.8);
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.5);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        /* Attribut-Tabelle */
+        .attribute-table-container {
+            position: absolute;
+            bottom: 0;
+            left: 400px;
+            right: 0;
+            height: 250px;
+            background: #2c3e50;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+        }
+
+        .attribute-table-header {
+            background: #34495e;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #3498db;
+        }
+
+        .attribute-table-title {
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .table-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .table-btn {
+            padding: 5px 12px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .table-btn:hover {
+            background: #2980b9;
+        }
+
+        .attribute-table-wrapper {
+            flex: 1;
+            overflow: auto;
+        }
+
+        .attribute-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .attribute-table th {
+            position: sticky;
+            top: 0;
+            background: #34495e;
+            padding: 10px;
+            text-align: left;
+            border-bottom: 2px solid #3498db;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .attribute-table th:hover {
+            background: #3d5568;
+        }
+
+        .attribute-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .attribute-table tr:hover {
+            background: #34495e;
+            cursor: pointer;
+        }
+        
+        .attribute-table tr.highlighted {
+            background: #e74c3c !important;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .attribute-table tr.highlighted td {
+            border-color: #c0392b;
+        }
+
+        .sort-indicator {
+            margin-left: 5px;
+            font-size: 10px;
+        }
+
+        /* Koordinaten-Anzeige */
+        .coordinates-display {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(44, 62, 80, 0.95);
+            color: #ecf0f1;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            pointer-events: none;
+        }
+
+        /* Export Dialog */
+        .export-dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #34495e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            z-index: 2000;
+            display: none;
+            min-width: 300px;
+        }
+
+        .export-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1999;
+            display: none;
+        }
+
+        .export-title {
+            font-size: 18px;
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+
+        .export-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .export-btn-large {
+            padding: 12px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .export-btn-large:hover {
+            background: #2980b9;
+        }
+
+        /* Style Editor */
+        .style-editor {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #34495e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            z-index: 2000;
+            display: none;
+            min-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .style-editor-title {
+            font-size: 18px;
+            color: #3498db;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .style-close-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .style-layer-item {
+            background: #2c3e50;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+        }
+
+        .style-layer-name {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ecf0f1;
+        }
+
+        .style-controls {
+            display: grid;
+            gap: 10px;
+        }
+
+        .style-control-row {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .style-label {
+            color: #bdc3c7;
+            font-size: 13px;
+        }
+
+        .style-input {
+            padding: 6px;
+            background: #34495e;
+            color: #ecf0f1;
+            border: 1px solid #3498db;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .style-input[type="color"] {
+            height: 35px;
+            cursor: pointer;
+        }
+
+        .style-input[type="range"] {
+            cursor: pointer;
+        }
+
+        .style-preview {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid white;
+            display: inline-block;
+        }
+
+        .layer-item .edit-icon {
+            cursor: pointer;
+            padding: 4px 8px;
+            background: #3498db;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+
+        .layer-item .edit-icon:hover {
+            background: #2980b9;
+        }
+
+        .leaflet-control-measure {
+            background: #34495e !important;
+            color: #ecf0f1 !important;
+            border: 1px solid #2c3e50 !important;
+        }
+
+        .leaflet-control-measure .leaflet-control-measure-toggle {
+            background-color: #3498db !important;
+            color: white !important;
+            border: none !important;
+        }
+
+        .leaflet-control-measure .leaflet-control-measure-toggle:hover {
+            background-color: #2980b9 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="header">
+                <h1>🗺️ INTERLIS1 WebGIS Pro</h1>
+                <p>Amtliche Vermessung - Professional Edition v2.0</p>
+            </div>
+            
+            <!-- File Upload -->
+            <div class="file-upload">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">
+                        <strong>webgis_data.geojson</strong><br>
+                        hier ablegen oder klicken
+                    </div>
+                </div>
+                <input type="file" id="fileInput" accept=".geojson,.json">
+            </div>
+            
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+            
+            <!-- Suchfunktion -->
+            <div class="search-section">
+                <div class="search-header">
+                    <h3>🔍 Feature-Suche</h3>
+                </div>
+                <div class="search-controls">
+                    <input type="text" id="searchInput" placeholder="Suche nach ID, Name, Nummer...">
+                    <button onclick="performSearch()" class="search-btn">Suchen</button>
+                </div>
+                <div class="search-results" id="searchResults"></div>
+            </div>
+            
+            <!-- Stats -->
+            <div class="stats" id="stats" style="display: none;">
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <span class="stat-value" id="total-features">0</span>
+                        <span class="stat-label">Gesamt</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="layer-count">0</span>
+                        <span class="stat-label">Layer</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="point-count">0</span>
+                        <span class="stat-label">Punkte</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="line-count">0</span>
+                        <span class="stat-label">Linien</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Layer Controls -->
+            <div class="layer-controls" id="layer-controls"></div>
+            
+            <!-- Controls -->
+            <div class="controls">
+                <div class="control-buttons">
+                    <button class="control-btn" onclick="toggleAttributeTable()">📊 Tabelle</button>
+                    <button class="control-btn" onclick="showExportDialog()">💾 Export</button>
+                    <button class="control-btn" onclick="showLegend()">🗺️ Legende</button>
+                    <button class="control-btn reset" onclick="resetView()">🔄 Reset</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Map -->
+        <div id="map"></div>
+        
+        <!-- Koordinaten-Anzeige -->
+        <div class="coordinates-display" id="coordsDisplay" style="display: none;">
+            <span id="coordsText">47.0000°N, 8.0000°E</span>
+        </div>
+        
+        <!-- Attribut-Tabelle -->
+        <div class="attribute-table-container" id="attributeTable">
+            <div class="attribute-table-header">
+                <span class="attribute-table-title">📋 Attribut-Tabelle</span>
+                <div class="table-controls">
+                    <button class="table-btn" onclick="exportTableCSV()">CSV Export</button>
+                    <button class="table-btn" onclick="toggleAttributeTable()">✖ Schließen</button>
+                </div>
+            </div>
+            <div class="attribute-table-wrapper">
+                <table class="attribute-table" id="dataTable">
+                    <thead id="tableHead"></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Export Dialog -->
+        <div class="export-overlay" id="exportOverlay" onclick="closeExportDialog()"></div>
+        <div class="export-dialog" id="exportDialog">
+            <div class="export-title">💾 Daten exportieren</div>
+            <div class="export-options">
+                <button class="export-btn-large" onclick="exportGeoJSON()">
+                    📍 GeoJSON (alle Features)
+                </button>
+                <button class="export-btn-large" onclick="exportVisibleGeoJSON()">
+                    👁️ GeoJSON (nur sichtbare Layer)
+                </button>
+                <button class="export-btn-large" onclick="exportTableCSV()">
+                    📊 CSV (Attribut-Tabelle)
+                </button>
+                <button class="export-btn-large" onclick="exportStatistics()">
+                    📈 Statistik (JSON)
+                </button>
+            </div>
+        </div>
+        
+        <!-- Style Editor -->
+        <div class="export-overlay" id="styleOverlay" onclick="closeStyleEditor()" style="display: none;"></div>
+        <div class="style-editor" id="styleEditor">
+            <div class="style-editor-title">
+                <span>🎨 Layer-Styling</span>
+                <button class="style-close-btn" onclick="closeStyleEditor()">✖ Schließen</button>
+            </div>
+            <div id="styleEditorContent"></div>
+        </div>
+        
+        <!-- Legend -->
+        <div class="legend" id="legend">
+            <div class="legend-title">Legende</div>
+            <div id="legend-content"></div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet Measure JS -->
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-measure@3.1.0/dist/leaflet-measure.js"></script>
+    
+    <script>
+        // LV95 zu WGS84 Konvertierung
+        function lv95ToWgs84(e, n) {
+            const y = (e - 2600000) / 1000000;
+            const x = (n - 1200000) / 1000000;
+            
+            const lambda = 2.6779094 + 4.728982 * y + 0.791484 * y * x + 0.1306 * y * Math.pow(x, 2) - 0.0436 * Math.pow(y, 3);
+            const phi = 16.9023892 + 3.238272 * x - 0.270978 * Math.pow(y, 2) - 0.002528 * Math.pow(x, 2) - 0.0447 * Math.pow(y, 2) * x - 0.0140 * Math.pow(x, 3);
+            
+            const lng = lambda * 100 / 36;
+            const lat = phi * 100 / 36;
+            
+            return { lat, lng };
+        }
+        
+        // WGS84 zu LV95 Konvertierung (Rückwärts)
+        function wgs84ToLv95(lat, lng) {
+            // Konvertiere zu Bogenmaß für Berechnung
+            const phi = lat * 3600;  // in Sekunden
+            const lambda = lng * 3600;  // in Sekunden
+            
+            // Hilfsvariablen
+            const phiPrime = (phi - 169028.66) / 10000;
+            const lambdaPrime = (lambda - 26782.5) / 10000;
+            
+            // Berechne LV95 Koordinaten
+            const e = 2600072.37 
+                + 211455.93 * lambdaPrime 
+                - 10938.51 * lambdaPrime * phiPrime 
+                - 0.36 * lambdaPrime * Math.pow(phiPrime, 2) 
+                - 44.54 * Math.pow(lambdaPrime, 3);
+                
+            const n = 1200147.07 
+                + 308807.95 * phiPrime 
+                + 3745.25 * Math.pow(lambdaPrime, 2) 
+                + 76.63 * Math.pow(phiPrime, 2) 
+                - 194.56 * Math.pow(lambdaPrime, 2) * phiPrime 
+                + 119.79 * Math.pow(phiPrime, 3);
+            
+            return { e: Math.round(e * 10) / 10, n: Math.round(n * 10) / 10 };
+        }
+        
+        function isLV95(coords) {
+            if (!coords || coords.length < 2) return false;
+            const [x, y] = coords;
+            return x >= 2480000 && x <= 2840000 && y >= 1070000 && y <= 1300000;
+        }
+        
+        function convertCoordinates(coords) {
+            if (Array.isArray(coords[0])) {
+                return coords.map(coord => convertCoordinates(coord));
+            } else {
+                if (isLV95(coords)) {
+                    const wgs84 = lv95ToWgs84(coords[0], coords[1]);
+                    return [wgs84.lng, wgs84.lat];
+                }
+                return coords;
+            }
+        }
+        
+// Initialisiere Karte
+const map = L.map('map').setView([47.3769, 8.5417], 10);
+
+// Alle Layer als einzelne Overlays (keine Basemaps)
+const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 19
+}).addTo(map);
+
+const swissTopo = L.tileLayer('https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg', {
+    attribution: '© swisstopo',
+    maxZoom: 19
+});
+
+const swissImage = L.tileLayer('https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/3857/{z}/{x}/{y}.jpeg', {
+    attribution: '© swisstopo',
+    maxZoom: 19
+});
+
+const zurichWMS = L.tileLayer.wms('http://wms.zh.ch/upwms', {
+    layers: 'upwms',
+    format: 'image/png',
+    transparent: true,
+    version: '1.3.0',
+    attribution: '© Kanton Zürich'
+});
+
+
+
+// Layer Control - alle als Overlays (keine Basemaps)
+const layerControl = L.control.layers(null, {
+    "OpenStreetMap": osmLayer,
+    "SwissTopo Karte": swissTopo,
+    "Luftbild Schweiz": swissImage,
+    "Zürcher Vermessung": zurichWMS
+
+}, {
+    position: 'topright',
+    collapsed: false
+}).addTo(map);
+        
+        // Messwerkzeuge
+        const measureControl = new L.Control.Measure({
+            position: 'topright',
+            primaryLengthUnit: 'meters',
+            secondaryLengthUnit: 'kilometers',
+            primaryAreaUnit: 'sqmeters',
+            secondaryAreaUnit: 'hectares',
+            activeColor: '#3498db',
+            completedColor: '#2ecc71'
+        });
+        measureControl.addTo(map);
+        
+        // Koordinaten-Anzeige
+        const coordsDisplay = document.getElementById('coordsDisplay');
+        const coordsText = document.getElementById('coordsText');
+        
+        map.on('mousemove', (e) => {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            
+            // Konvertiere WGS84 zu LV95
+            const lv95 = wgs84ToLv95(lat, lng);
+            
+            // Zeige LV95 Koordinaten
+            coordsText.textContent = `E: ${lv95.e.toFixed(1)} m | N: ${lv95.n.toFixed(1)} m | LV95`;
+            coordsDisplay.style.display = 'block';
+        });
+        
+        map.on('mouseout', () => {
+            coordsDisplay.style.display = 'none';
+        });
+        
+        // Storage
+        let allFeatures = [];
+        let layerGroups = {};
+        let tableLayers = {};
+        let legendItems = new Set();
+        let searchMarkers = L.layerGroup().addTo(map);
+        let currentSortColumn = null;
+        let currentSortDirection = 'asc';
+        let highlightLayer = L.layerGroup().addTo(map); // Für Highlighting
+        
+        // File Upload
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        
+        uploadArea.onclick = () => fileInput.click();
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.background = 'rgba(52, 152, 219, 0.3)';
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.background = 'rgba(52, 152, 219, 0.1)';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.background = 'rgba(52, 152, 219, 0.1)';
+            const file = e.dataTransfer.files[0];
+            if (file) loadGeoJSON(file);
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) loadGeoJSON(file);
+        });
+        
+        function loadGeoJSON(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const geojsonData = JSON.parse(e.target.result);
+                    processGeoJSON(geojsonData);
+                    showSuccess(`✅ ${file.name} erfolgreich geladen!`);
+                } catch (error) {
+                    showError(`Fehler beim Lesen: ${error.message}`);
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        function processGeoJSON(data) {
+            Object.values(layerGroups).forEach(group => {
+                if (group.layer) map.removeLayer(group.layer);
+            });
+            
+            allFeatures = data.features || [];
+            layerGroups = {};
+            tableLayers = {};
+            legendItems.clear();
+            searchMarkers.clearLayers();
+            
+            allFeatures.forEach(feature => {
+                const props = feature.properties || {};
+                const table = props.table || 'Unbekannt';
+                const layerName = props.layer_name || table;
+                const layerGroup = props.layer_group || 'Sonstige';
+                
+                if (!layerGroups[layerGroup]) {
+                    layerGroups[layerGroup] = {
+                        name: layerGroup,
+                        layers: {},
+                        expanded: true
+                    };
+                }
+                
+                if (!layerGroups[layerGroup].layers[table]) {
+                    layerGroups[layerGroup].layers[table] = {
+                        name: layerName,
+                        table: table,
+                        features: [],
+                        visible: true,
+                        color: props.color || '#95a5a6',
+                        symbol: props.symbol || '📌'
+                    };
+                }
+                
+                layerGroups[layerGroup].layers[table].features.push(feature);
+            });
+            
+            Object.values(layerGroups).forEach(group => {
+                Object.values(group.layers).forEach(layerInfo => {
+                    const layer = L.layerGroup();
+                    
+                    layerInfo.features.forEach(feature => {
+                        const convertedGeometry = {
+                            type: feature.geometry.type,
+                            coordinates: convertCoordinates(feature.geometry.coordinates)
+                        };
+                        
+                        const props = feature.properties || {};
+                        const popupContent = createPopupContent(feature);
+                        
+                        let leafletFeature;
+                        
+                        if (convertedGeometry.type === 'Point') {
+                            leafletFeature = L.circleMarker(
+                                [convertedGeometry.coordinates[1], convertedGeometry.coordinates[0]], 
+                                {
+                                    radius: 6,
+                                    fillColor: props.color || '#95a5a6',
+                                    color: '#2c3e50',
+                                    weight: 1,
+                                    opacity: 1,
+                                    fillOpacity: 0.8
+                                }
+                            );
+                        } else if (convertedGeometry.type === 'LineString') {
+                            leafletFeature = L.polyline(
+                                convertedGeometry.coordinates.map(coord => [coord[1], coord[0]]),
+                                {
+                                    color: props.color || '#3498db',
+                                    weight: 3,
+                                    opacity: 0.8
+                                }
+                            );
+                        } else if (convertedGeometry.type === 'Polygon') {
+                            leafletFeature = L.polygon(
+                                convertedGeometry.coordinates[0].map(coord => [coord[1], coord[0]]),
+                                {
+                                    fillColor: props.color || '#2ecc71',
+                                    color: '#27ae60',
+                                    weight: 2,
+                                    opacity: 1,
+                                    fillOpacity: 0.4
+                                }
+                            );
+                        }
+                        
+                        if (leafletFeature) {
+                            leafletFeature.bindPopup(popupContent);
+                            layer.addLayer(leafletFeature);
+                            leafletFeature.featureData = feature;
+                        }
+                    });
+                    
+                    layerInfo.layer = layer;
+                    tableLayers[layerInfo.table] = layerInfo;
+                    
+                    if (layerInfo.visible) {
+                        map.addLayer(layer);
+                    }
+                    
+                    legendItems.add({
+                        name: layerInfo.name,
+                        color: layerInfo.color,
+                        symbol: layerInfo.symbol
+                    });
+                });
+            });
+            
+            updateStats();
+            createLayerControls();
+            updateLegend();
+            
+            const allBounds = L.latLngBounds();
+            allFeatures.forEach(feature => {
+                const convertedGeometry = {
+                    type: feature.geometry.type,
+                    coordinates: convertCoordinates(feature.geometry.coordinates)
+                };
+                
+                if (convertedGeometry.type === 'Point') {
+                    allBounds.extend([convertedGeometry.coordinates[1], convertedGeometry.coordinates[0]]);
+                } else if (convertedGeometry.type === 'LineString') {
+                    convertedGeometry.coordinates.forEach(coord => {
+                        allBounds.extend([coord[1], coord[0]]);
+                    });
+                } else if (convertedGeometry.type === 'Polygon') {
+                    convertedGeometry.coordinates[0].forEach(coord => {
+                        allBounds.extend([coord[1], coord[0]]);
+                    });
+                }
+            });
+            
+            if (allFeatures.length > 0 && allBounds.isValid()) {
+                map.fitBounds(allBounds, { padding: [50, 50] });
+            }
+        }
+        
+        function performSearch() {
+            const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+            const resultsContainer = document.getElementById('searchResults');
+            
+            if (!searchTerm) {
+                resultsContainer.style.display = 'none';
+                searchMarkers.clearLayers();
+                return;
+            }
+            
+            const results = [];
+            
+            allFeatures.forEach((feature, featureIndex) => {
+                const props = feature.properties || {};
+                let matchFound = false;
+                let matchField = '';
+                let matchValue = '';
+                
+                Object.entries(props).forEach(([key, value]) => {
+                    if (value && value.toString().toLowerCase().includes(searchTerm)) {
+                        matchFound = true;
+                        matchField = key;
+                        matchValue = value.toString();
+                    }
+                });
+                
+                if (matchFound) {
+                    results.push({
+                        feature: feature,
+                        field: matchField,
+                        value: matchValue,
+                        props: props,
+                        index: featureIndex
+                    });
+                }
+            });
+            
+            if (results.length > 0) {
+                let resultsHTML = '';
+                results.slice(0, 20).forEach((result, index) => {
+                    const props = result.props;
+                    const displayName = props.layer_name || props.table || props.obj_id || `Feature ${result.index}`;
+                    
+                    // WICHTIG: Verwende result.index statt index für korrekten Feature-Index
+                    resultsHTML += `
+                        <div class="search-result-item" onclick="zoomToFeatureFromSearch(${result.index})">
+                            <strong>${displayName}</strong><br>
+                            <span>${result.field}: ${result.value}</span>
+                            <div class="result-type">${result.feature.geometry.type}</div>
+                        </div>
+                    `;
+                });
+                
+                if (results.length > 20) {
+                    resultsHTML += `<div class="search-result-item">... und ${results.length - 20} weitere Ergebnisse</div>`;
+                }
+                
+                resultsContainer.innerHTML = resultsHTML;
+                resultsContainer.style.display = 'block';
+                highlightSearchResults(results);
+            } else {
+                resultsContainer.innerHTML = '<div class="no-results">Keine Ergebnisse gefunden</div>';
+                resultsContainer.style.display = 'block';
+                searchMarkers.clearLayers();
+            }
+            
+            // Speichere für direkten Zugriff
+            window.searchResults = results;
+        }
+        
+        function highlightSearchResults(results) {
+            searchMarkers.clearLayers();
+            
+            results.forEach((result, index) => {
+                const feature = result.feature;
+                
+                try {
+                    const convertedGeometry = {
+                        type: feature.geometry.type,
+                        coordinates: convertCoordinates(feature.geometry.coordinates)
+                    };
+                    
+                    if (convertedGeometry.type === 'Point' && convertedGeometry.coordinates.length >= 2) {
+                        const latlng = [convertedGeometry.coordinates[1], convertedGeometry.coordinates[0]];
+                        
+                        const marker = L.circleMarker(latlng, {
+                            radius: 10,
+                            fillColor: '#e74c3c',
+                            color: '#c0392b',
+                            weight: 2,
+                            opacity: 1,
+                            fillOpacity: 0.8
+                        }).addTo(searchMarkers);
+                        
+                        marker.featureData = feature;
+                        marker.searchResult = result;
+                        
+                        marker.bindPopup(`
+                            <div class="popup-title">🔍 Suchergebnis</div>
+                            <strong>${result.field}: ${result.value}</strong><br>
+                            <em>${result.props.layer_name || result.props.table || 'Unbekannt'}</em>
+                        `);
+                        
+                    } else if (convertedGeometry.type === 'LineString') {
+                        if (convertedGeometry.coordinates.length > 0) {
+                            const firstCoord = convertedGeometry.coordinates[0];
+                            const latlng = [firstCoord[1], firstCoord[0]];
+                            
+                            const marker = L.circleMarker(latlng, {
+                                radius: 8,
+                                fillColor: '#3498db',
+                                color: '#2980b9',
+                                weight: 2,
+                                opacity: 1,
+                                fillOpacity: 0.8
+                            }).addTo(searchMarkers);
+                            
+                            marker.featureData = feature;
+                            marker.searchResult = result;
+                        }
+                        
+                    } else if (convertedGeometry.type === 'Polygon') {
+                        if (convertedGeometry.coordinates.length > 0 && convertedGeometry.coordinates[0].length > 0) {
+                            const firstCoord = convertedGeometry.coordinates[0][0];
+                            const latlng = [firstCoord[1], firstCoord[0]];
+                            
+                            const marker = L.circleMarker(latlng, {
+                                radius: 8,
+                                fillColor: '#2ecc71',
+                                color: '#27ae60',
+                                weight: 2,
+                                opacity: 1,
+                                fillOpacity: 0.8
+                            }).addTo(searchMarkers);
+                            
+                            marker.featureData = feature;
+                            marker.searchResult = result;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Fehler beim Verarbeiten:', error);
+                }
+            });
+            
+            if (results.length > 0 && searchMarkers.getLayers().length > 0) {
+                const bounds = searchMarkers.getBounds();
+                if (bounds.isValid()) {
+                    map.fitBounds(bounds, { padding: [50, 50] });
+                }
+            }
+        }
+        
+        function zoomToFeatureFromSearch(featureIndex) {
+            console.log('🎯 Zoom zu Feature Index:', featureIndex);
+            
+            if (!allFeatures[featureIndex]) {
+                console.error('❌ Feature nicht gefunden:', featureIndex);
+                showError('Feature nicht gefunden');
+                return;
+            }
+
+            const feature = allFeatures[featureIndex];
+            console.log('📋 Feature gefunden:', feature.properties);
+            
+            // Feature highlighten
+            highlightFeature(feature, featureIndex);
+            
+            try {
+                const convertedGeometry = {
+                    type: feature.geometry.type,
+                    coordinates: convertCoordinates(feature.geometry.coordinates)
+                };
+
+                console.log('📍 Konvertierte Koordinaten:', convertedGeometry);
+
+                if (convertedGeometry.type === 'Point') {
+                    const lat = convertedGeometry.coordinates[1];
+                    const lng = convertedGeometry.coordinates[0];
+                    
+                    console.log('✅ Zoom zu Punkt:', lat, lng);
+                    
+                    map.flyTo([lat, lng], 18, { 
+                        duration: 1.5,
+                        easeLinearity: 0.25
+                    });
+                    
+                    setTimeout(() => {
+                        const pulseIcon = L.divIcon({
+                            className: 'pulse-marker',
+                            html: '<div class="pulse-ring"></div><div class="pulse-dot"></div>',
+                            iconSize: [30, 30]
+                        });
+                        
+                        const props = feature.properties || {};
+                        const tempMarker = L.marker([lat, lng], { icon: pulseIcon })
+                            .addTo(map)
+                            .bindPopup(`
+                                <div class="popup-title">🎯 ${props.layer_name || props.table || 'Feature'}</div>
+                                <strong>Gefunden!</strong><br>
+                                <small>📍 E: ${wgs84ToLv95(lat, lng).e.toFixed(1)} | N: ${wgs84ToLv95(lat, lng).n.toFixed(1)}</small>
+                            `)
+                            .openPopup();
+                        
+                        setTimeout(() => map.removeLayer(tempMarker), 4000);
+                    }, 1500);
+                    
+                } else if (convertedGeometry.type === 'LineString') {
+                    const coords = convertedGeometry.coordinates.map(c => [c[1], c[0]]);
+                    const bounds = L.latLngBounds(coords);
+                    
+                    console.log('✅ Zoom zu Linie');
+                    
+                    map.flyToBounds(bounds, { 
+                        padding: [50, 50],
+                        duration: 1.5
+                    });
+                    
+                } else if (convertedGeometry.type === 'Polygon') {
+                    const coords = convertedGeometry.coordinates[0].map(c => [c[1], c[0]]);
+                    const bounds = L.latLngBounds(coords);
+                    
+                    console.log('✅ Zoom zu Polygon');
+                    
+                    map.flyToBounds(bounds, { 
+                        padding: [50, 50],
+                        duration: 1.5
+                    });
+                }
+                
+                // Schließe Suchergebnisse
+                setTimeout(() => {
+                    document.getElementById('searchResults').style.display = 'none';
+                }, 500);
+                
+                showSuccess('🎯 Feature gefunden und hervorgehoben!');
+                
+            } catch (error) {
+                console.error('❌ Fehler beim Zoomen:', error);
+                showError('Zoom fehlgeschlagen: ' + error.message);
+            }
+        }
+        
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+        
+        function createPopupContent(feature) {
+            const props = feature.properties || {};
+            let content = '<div class="popup-title">';
+            content += `${props.symbol || ''} ${props.layer_name || props.table || 'Unbekannt'}`;
+            content += '</div>';
+            
+            const fields = [
+                { label: 'Tabelle', value: props.table },
+                { label: 'Layer', value: props.layer_name },
+                { label: 'Gruppe', value: props.layer_group },
+                { label: 'Geometrietyp', value: feature.geometry.type },
+                { label: 'ID', value: props.obj_id },
+                { label: 'Nummer', value: props.nummer },
+                { label: 'Ident', value: props.ident },
+                { label: 'Höhe', value: props.hoehe ? props.hoehe + ' m' : null }
+            ];
+            
+            fields.forEach(field => {
+                if (field.value) {
+                    content += `
+                        <div class="popup-row">
+                            <span class="popup-label">${field.label}:</span>
+                            <span class="popup-value">${field.value}</span>
+                        </div>
+                    `;
+                }
+            });
+            
+            return content;
+        }
+        
+        function updateStats() {
+            const pointCount = allFeatures.filter(f => f.geometry.type === 'Point').length;
+            const lineCount = allFeatures.filter(f => f.geometry.type === 'LineString').length;
+            const polygonCount = allFeatures.filter(f => f.geometry.type === 'Polygon').length;
+            
+            document.getElementById('total-features').textContent = allFeatures.length;
+            document.getElementById('layer-count').textContent = Object.keys(tableLayers).length;
+            document.getElementById('point-count').textContent = pointCount;
+            document.getElementById('line-count').textContent = lineCount + polygonCount;
+            
+            document.getElementById('stats').style.display = 'block';
+        }
+        
+        function createLayerControls() {
+            const controls = document.getElementById('layer-controls');
+            controls.innerHTML = '';
+            
+            Object.values(layerGroups).forEach(group => {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'layer-group';
+                
+                const layerCount = Object.values(group.layers).reduce((sum, layer) => sum + layer.features.length, 0);
+                
+                const groupHeader = document.createElement('div');
+                groupHeader.className = 'group-header';
+                groupHeader.innerHTML = `
+                    <span>${group.name}</span>
+                    <span class="group-count">${layerCount}</span>
+                `;
+                
+                groupHeader.onclick = () => {
+                    group.expanded = !group.expanded;
+                    layerList.classList.toggle('expanded', group.expanded);
+                };
+                
+                const layerList = document.createElement('div');
+                layerList.className = `layer-list ${group.expanded ? 'expanded' : ''}`;
+                
+                Object.values(group.layers).forEach(layerInfo => {
+                    const layerItem = document.createElement('div');
+                    layerItem.className = 'layer-item';
+                    
+                    layerItem.innerHTML = `
+                        <input type="checkbox" class="layer-checkbox" ${layerInfo.visible ? 'checked' : ''}>
+                        <div class="layer-color" style="background: ${layerInfo.color}"></div>
+                        <div class="layer-info">
+                            <div class="layer-name">${layerInfo.symbol} ${layerInfo.name}</div>
+                            <div class="layer-stats">${layerInfo.features.length} Features</div>
+                        </div>
+                        <span class="layer-count">${layerInfo.features.length}</span>
+                        <span class="edit-icon" onclick="openStyleEditor('${layerInfo.table}')">🎨</span>
+                    `;
+                    
+                    const checkbox = layerItem.querySelector('.layer-checkbox');
+                    checkbox.onchange = (e) => {
+                        e.stopPropagation();
+                        toggleLayer(layerInfo.table, e.target.checked);
+                    };
+                    
+                    layerList.appendChild(layerItem);
+                });
+                
+                groupDiv.appendChild(groupHeader);
+                groupDiv.appendChild(layerList);
+                controls.appendChild(groupDiv);
+            });
+        }
+        
+        function toggleLayer(table, visible) {
+            const layerInfo = tableLayers[table];
+            if (layerInfo) {
+                layerInfo.visible = visible;
+                if (visible) {
+                    map.addLayer(layerInfo.layer);
+                } else {
+                    map.removeLayer(layerInfo.layer);
+                }
+            }
+        }
+        
+        function updateLegend() {
+            const legendContent = document.getElementById('legend-content');
+            legendContent.innerHTML = '';
+            
+            legendItems.forEach(item => {
+                const legendItem = document.createElement('div');
+                legendItem.className = 'legend-item';
+                legendItem.innerHTML = `
+                    <div class="legend-color" style="background: ${item.color}"></div>
+                    <span>${item.symbol} ${item.name}</span>
+                `;
+                legendContent.appendChild(legendItem);
+            });
+        }
+        
+        function showLegend() {
+            const legend = document.getElementById('legend');
+            legend.style.display = legend.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function toggleAttributeTable() {
+            const table = document.getElementById('attributeTable');
+            const isVisible = table.style.display === 'flex';
+            
+            if (isVisible) {
+                table.style.display = 'none';
+            } else {
+                table.style.display = 'flex';
+                populateAttributeTable();
+            }
+        }
+        
+        function populateAttributeTable() {
+            const tableHead = document.getElementById('tableHead');
+            const tableBody = document.getElementById('tableBody');
+            
+            if (allFeatures.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="10">Keine Daten geladen</td></tr>';
+                return;
+            }
+            
+            const columns = new Set(['layer_name', 'table', 'obj_id', 'geometry_type']);
+            allFeatures.forEach(f => {
+                Object.keys(f.properties || {}).forEach(key => columns.add(key));
+            });
+            
+            const columnArray = Array.from(columns).slice(0, 15);
+            
+            tableHead.innerHTML = '<tr>' + 
+                columnArray.map(col => `
+                    <th onclick="sortTable('${col}')">
+                        ${col.replace(/_/g, ' ')}
+                        <span class="sort-indicator" id="sort-${col}"></span>
+                    </th>
+                `).join('') +
+                '</tr>';
+            
+            tableBody.innerHTML = allFeatures.map((feature, index) => {
+                const props = feature.properties || {};
+                return '<tr onclick="zoomToFeatureFromTable(' + index + ')">' +
+                    columnArray.map(col => {
+                        let value = props[col] || '';
+                        if (col === 'geometry_type') value = feature.geometry.type;
+                        return `<td>${value}</td>`;
+                    }).join('') +
+                    '</tr>';
+            }).join('');
+        }
+        
+        function sortTable(column) {
+            if (currentSortColumn === column) {
+                currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortColumn = column;
+                currentSortDirection = 'asc';
+            }
+            
+            allFeatures.sort((a, b) => {
+                let aVal = a.properties?.[column] || '';
+                let bVal = b.properties?.[column] || '';
+                
+                if (column === 'geometry_type') {
+                    aVal = a.geometry.type;
+                    bVal = b.geometry.type;
+                }
+                
+                if (typeof aVal === 'number' && typeof bVal === 'number') {
+                    return currentSortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+                }
+                
+                return currentSortDirection === 'asc' 
+                    ? String(aVal).localeCompare(String(bVal))
+                    : String(bVal).localeCompare(String(aVal));
+            });
+            
+            document.querySelectorAll('.sort-indicator').forEach(el => el.textContent = '');
+            const indicator = document.getElementById(`sort-${column}`);
+            if (indicator) {
+                indicator.textContent = currentSortDirection === 'asc' ? '▲' : '▼';
+            }
+            
+            populateAttributeTable();
+        }
+        
+        function zoomToFeatureFromTable(index) {
+            const feature = allFeatures[index];
+            if (!feature) return;
+            
+            // Feature highlighten
+            highlightFeature(feature, index);
+            
+            const convertedGeometry = {
+                type: feature.geometry.type,
+                coordinates: convertCoordinates(feature.geometry.coordinates)
+            };
+            
+            if (convertedGeometry.type === 'Point') {
+                const lat = convertedGeometry.coordinates[1];
+                const lng = convertedGeometry.coordinates[0];
+                map.flyTo([lat, lng], 18, { duration: 1.5 });
+                
+                // Pulsierender Marker
+                setTimeout(() => {
+                    const pulseIcon = L.divIcon({
+                        className: 'pulse-marker',
+                        html: '<div class="pulse-ring"></div><div class="pulse-dot"></div>',
+                        iconSize: [30, 30]
+                    });
+                    
+                    const tempMarker = L.marker([lat, lng], { icon: pulseIcon })
+                        .addTo(map)
+                        .bindPopup(`
+                            <div class="popup-title">📊 Aus Tabelle ausgewählt</div>
+                            <strong>${feature.properties?.layer_name || 'Feature'}</strong><br>
+                            <small>📍 E: ${wgs84ToLv95(lat, lng).e.toFixed(1)} | N: ${wgs84ToLv95(lat, lng).n.toFixed(1)}</small>
+                        `)
+                        .openPopup();
+                    
+                    setTimeout(() => map.removeLayer(tempMarker), 4000);
+                }, 1500);
+                
+            } else {
+                const tempLayer = L.geoJSON(feature);
+                map.flyToBounds(tempLayer.getBounds(), { padding: [50, 50], duration: 1.5 });
+            }
+            
+            // Highlight in Tabelle
+            document.querySelectorAll('.attribute-table tbody tr').forEach((row, i) => {
+                row.classList.toggle('highlighted', i === index);
+            });
+            
+            showSuccess('✨ Feature hervorgehoben!');
+        }
+        
+        function showExportDialog() {
+            document.getElementById('exportOverlay').style.display = 'block';
+            document.getElementById('exportDialog').style.display = 'block';
+        }
+        
+        function closeExportDialog() {
+            document.getElementById('exportOverlay').style.display = 'none';
+            document.getElementById('exportDialog').style.display = 'none';
+        }
+        
+        function exportGeoJSON() {
+            const geojson = {
+                type: 'FeatureCollection',
+                features: allFeatures
+            };
+            
+            downloadFile(
+                JSON.stringify(geojson, null, 2),
+                'export_all.geojson',
+                'application/geo+json'
+            );
+            
+            closeExportDialog();
+            showSuccess('✅ GeoJSON exportiert!');
+        }
+        
+        function exportVisibleGeoJSON() {
+            const visibleFeatures = allFeatures.filter(feature => {
+                const table = feature.properties?.table;
+                return tableLayers[table]?.visible;
+            });
+            
+            const geojson = {
+                type: 'FeatureCollection',
+                features: visibleFeatures
+            };
+            
+            downloadFile(
+                JSON.stringify(geojson, null, 2),
+                'export_visible.geojson',
+                'application/geo+json'
+            );
+            
+            closeExportDialog();
+            showSuccess(`✅ ${visibleFeatures.length} Features exportiert!`);
+        }
+        
+        function exportTableCSV() {
+            if (allFeatures.length === 0) {
+                showError('Keine Daten zum Exportieren');
+                return;
+            }
+            
+            const columns = new Set();
+            allFeatures.forEach(f => {
+                Object.keys(f.properties || {}).forEach(key => columns.add(key));
+            });
+            
+            const columnArray = ['geometry_type', ...Array.from(columns)];
+            
+            let csv = columnArray.map(col => `"${col}"`).join(',') + '\n';
+            
+            allFeatures.forEach(feature => {
+                const row = columnArray.map(col => {
+                    let value = col === 'geometry_type' 
+                        ? feature.geometry.type 
+                        : feature.properties?.[col] || '';
+                    return `"${String(value).replace(/"/g, '""')}"`;
+                });
+                csv += row.join(',') + '\n';
+            });
+            
+            downloadFile(csv, 'export_attributes.csv', 'text/csv');
+            closeExportDialog();
+            showSuccess('✅ CSV exportiert!');
+        }
+        
+        function exportStatistics() {
+            const stats = {
+                total_features: allFeatures.length,
+                geometry_types: {},
+                layers: {},
+                layer_groups: {}
+            };
+            
+            allFeatures.forEach(feature => {
+                const geomType = feature.geometry.type;
+                stats.geometry_types[geomType] = (stats.geometry_types[geomType] || 0) + 1;
+                
+                const table = feature.properties?.table || 'unknown';
+                const layerGroup = feature.properties?.layer_group || 'unknown';
+                
+                stats.layers[table] = (stats.layers[table] || 0) + 1;
+                stats.layer_groups[layerGroup] = (stats.layer_groups[layerGroup] || 0) + 1;
+            });
+            
+            downloadFile(
+                JSON.stringify(stats, null, 2),
+                'export_statistics.json',
+                'application/json'
+            );
+            
+            closeExportDialog();
+            showSuccess('✅ Statistik exportiert!');
+        }
+        
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        function resetView() {
+            map.setView([47.0, 8.2], 8);
+            searchMarkers.clearLayers();
+            highlightLayer.clearLayers(); // Lösche Highlights
+            document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('searchInput').value = '';
+            document.getElementById('attributeTable').style.display = 'none';
+            
+            // Entferne Tabellen-Highlights
+            document.querySelectorAll('.attribute-table tbody tr').forEach(row => {
+                row.classList.remove('highlighted');
+            });
+            
+            Object.values(tableLayers).forEach(layerInfo => {
+                layerInfo.visible = true;
+                map.addLayer(layerInfo.layer);
+            });
+            
+            createLayerControls();
+            showSuccess('🔄 Ansicht zurückgesetzt');
+        }
+        
+        // ========================================
+        // ✨ HIGHLIGHT-FUNKTION
+        // ========================================
+        
+        function highlightFeature(feature, featureIndex) {
+            // Lösche vorherige Highlights
+            highlightLayer.clearLayers();
+            
+            const convertedGeometry = {
+                type: feature.geometry.type,
+                coordinates: convertCoordinates(feature.geometry.coordinates)
+            };
+            
+            let highlightStyle = {
+                color: '#ff0000',
+                weight: 4,
+                opacity: 1,
+                fillColor: '#ff0000',
+                fillOpacity: 0.3
+            };
+            
+            let highlightFeature;
+            
+            if (convertedGeometry.type === 'Point') {
+                highlightFeature = L.circleMarker(
+                    [convertedGeometry.coordinates[1], convertedGeometry.coordinates[0]], 
+                    {
+                        radius: 12,
+                        fillColor: '#ff0000',
+                        color: '#ffffff',
+                        weight: 3,
+                        opacity: 1,
+                        fillOpacity: 0.7
+                    }
+                );
+            } else if (convertedGeometry.type === 'LineString') {
+                highlightFeature = L.polyline(
+                    convertedGeometry.coordinates.map(coord => [coord[1], coord[0]]),
+                    highlightStyle
+                );
+            } else if (convertedGeometry.type === 'Polygon') {
+                highlightFeature = L.polygon(
+                    convertedGeometry.coordinates[0].map(coord => [coord[1], coord[0]]),
+                    highlightStyle
+                );
+            }
+            
+            if (highlightFeature) {
+                highlightFeature.addTo(highlightLayer);
+                
+                // Popup mit Info
+                const props = feature.properties || {};
+                highlightFeature.bindPopup(`
+                    <div class="popup-title">✨ Hervorgehobenes Feature</div>
+                    <strong>${props.layer_name || props.table || 'Feature'}</strong><br>
+                    <small>ID: ${props.obj_id || featureIndex}</small>
+                `);
+            }
+            
+            // Highlight in Tabelle wenn geöffnet
+            const tableBody = document.getElementById('tableBody');
+            if (tableBody && tableBody.children.length > 0) {
+                document.querySelectorAll('.attribute-table tbody tr').forEach((row, i) => {
+                    row.classList.toggle('highlighted', i === featureIndex);
+                });
+                
+                // Scrolle zur Zeile
+                const highlightedRow = tableBody.children[featureIndex];
+                if (highlightedRow) {
+                    highlightedRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+        
+        // ========================================
+        // 🎨 STYLE-EDITOR
+        // ========================================
+        
+        function openStyleEditor(tableId) {
+            const layerInfo = tableLayers[tableId];
+            if (!layerInfo) return;
+            
+            const editor = document.getElementById('styleEditor');
+            const overlay = document.getElementById('styleOverlay');
+            const content = document.getElementById('styleEditorContent');
+            
+            // Standard-Werte falls nicht vorhanden
+            if (!layerInfo.style) {
+                layerInfo.style = {
+                    color: layerInfo.color || '#3498db',
+                    weight: 3,
+                    opacity: 0.8,
+                    fillOpacity: 0.5,
+                    radius: 6
+                };
+            }
+            
+            const geomType = layerInfo.features[0]?.geometry.type || 'Point';
+            
+            content.innerHTML = `
+                <div class="style-layer-item">
+                    <div class="style-layer-name">
+                        ${layerInfo.symbol} ${layerInfo.name}
+                        <br><small>${layerInfo.features.length} Features | ${geomType}</small>
+                    </div>
+                    
+                    <div class="style-controls">
+                        <div class="style-control-row">
+                            <label class="style-label">Farbe:</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="color" class="style-input" id="style-color" value="${layerInfo.style.color}">
+                                <div class="style-preview" style="background: ${layerInfo.style.color}"></div>
+                            </div>
+                        </div>
+                        
+                        ${geomType === 'Point' ? `
+                        <div class="style-control-row">
+                            <label class="style-label">Größe:</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="range" class="style-input" id="style-radius" min="2" max="20" value="${layerInfo.style.radius}">
+                                <span id="radius-value">${layerInfo.style.radius}px</span>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        ${geomType !== 'Point' ? `
+                        <div class="style-control-row">
+                            <label class="style-label">Linienbreite:</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="range" class="style-input" id="style-weight" min="1" max="10" value="${layerInfo.style.weight}">
+                                <span id="weight-value">${layerInfo.style.weight}px</span>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="style-control-row">
+                            <label class="style-label">Deckkraft:</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="range" class="style-input" id="style-opacity" min="0" max="100" value="${layerInfo.style.opacity * 100}">
+                                <span id="opacity-value">${Math.round(layerInfo.style.opacity * 100)}%</span>
+                            </div>
+                        </div>
+                        
+                        ${geomType === 'Polygon' ? `
+                        <div class="style-control-row">
+                            <label class="style-label">Füllung:</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="range" class="style-input" id="style-fillOpacity" min="0" max="100" value="${layerInfo.style.fillOpacity * 100}">
+                                <span id="fillOpacity-value">${Math.round(layerInfo.style.fillOpacity * 100)}%</span>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="style-control-row">
+                            <label class="style-label">Symbol:</label>
+                            <select class="style-input" id="style-symbol">
+                                <option value="📌" ${layerInfo.symbol === '📌' ? 'selected' : ''}>📌 Pin</option>
+                                <option value="⭐" ${layerInfo.symbol === '⭐' ? 'selected' : ''}>⭐ Stern</option>
+                                <option value="🔷" ${layerInfo.symbol === '🔷' ? 'selected' : ''}>🔷 Diamant</option>
+                                <option value="🔴" ${layerInfo.symbol === '🔴' ? 'selected' : ''}>🔴 Kreis</option>
+                                <option value="🟦" ${layerInfo.symbol === '🟦' ? 'selected' : ''}>🟦 Quadrat</option>
+                                <option value="🔺" ${layerInfo.symbol === '🔺' ? 'selected' : ''}>🔺 Dreieck</option>
+                                <option value="⬟" ${layerInfo.symbol === '⬟' ? 'selected' : ''}>⬟ Pentagon</option>
+                                <option value="🎯" ${layerInfo.symbol === '🎯' ? 'selected' : ''}>🎯 Ziel</option>
+                                <option value="📍" ${layerInfo.symbol === '📍' ? 'selected' : ''}>📍 Standort</option>
+                            </select>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                            <button class="export-btn-large" onclick="applyStyle('${tableId}')">✅ Anwenden</button>
+                            <button class="export-btn-large" style="background: #95a5a6;" onclick="resetStyle('${tableId}')">🔄 Zurücksetzen</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Live-Vorschau Updates
+            const updatePreview = () => {
+                const color = document.getElementById('style-color').value;
+                document.querySelector('.style-preview').style.background = color;
+            };
+            
+            const updateRadiusLabel = () => {
+                const value = document.getElementById('style-radius')?.value;
+                if (value) document.getElementById('radius-value').textContent = value + 'px';
+            };
+            
+            const updateWeightLabel = () => {
+                const value = document.getElementById('style-weight')?.value;
+                if (value) document.getElementById('weight-value').textContent = value + 'px';
+            };
+            
+            const updateOpacityLabel = () => {
+                const value = document.getElementById('style-opacity').value;
+                document.getElementById('opacity-value').textContent = value + '%';
+            };
+            
+            const updateFillOpacityLabel = () => {
+                const value = document.getElementById('style-fillOpacity')?.value;
+                if (value) document.getElementById('fillOpacity-value').textContent = value + '%';
+            };
+            
+            document.getElementById('style-color').addEventListener('input', updatePreview);
+            document.getElementById('style-radius')?.addEventListener('input', updateRadiusLabel);
+            document.getElementById('style-weight')?.addEventListener('input', updateWeightLabel);
+            document.getElementById('style-opacity').addEventListener('input', updateOpacityLabel);
+            document.getElementById('style-fillOpacity')?.addEventListener('input', updateFillOpacityLabel);
+            
+            overlay.style.display = 'block';
+            editor.style.display = 'block';
+        }
+        
+        function closeStyleEditor() {
+            document.getElementById('styleOverlay').style.display = 'none';
+            document.getElementById('styleEditor').style.display = 'none';
+        }
+        
+        function applyStyle(tableId) {
+            const layerInfo = tableLayers[tableId];
+            if (!layerInfo) return;
+            
+            // Lese neue Werte
+            const newStyle = {
+                color: document.getElementById('style-color').value,
+                opacity: document.getElementById('style-opacity').value / 100,
+                radius: document.getElementById('style-radius')?.value || 6,
+                weight: document.getElementById('style-weight')?.value || 3,
+                fillOpacity: document.getElementById('style-fillOpacity')?.value / 100 || 0.5
+            };
+            
+            const newSymbol = document.getElementById('style-symbol').value;
+            
+            // Speichere Style
+            layerInfo.style = newStyle;
+            layerInfo.color = newStyle.color;
+            layerInfo.symbol = newSymbol;
+            
+            // Neuzeichnen des Layers
+            redrawLayer(tableId);
+            
+            // Update UI
+            updateLegend();
+            createLayerControls();
+            
+            closeStyleEditor();
+            showSuccess('✅ Style erfolgreich angewendet!');
+        }
+        
+        function resetStyle(tableId) {
+            const layerInfo = tableLayers[tableId];
+            if (!layerInfo) return;
+            
+            // Zurücksetzen auf Defaults
+            const geomType = layerInfo.features[0]?.geometry.type || 'Point';
+            
+            layerInfo.style = {
+                color: geomType === 'Point' ? '#95a5a6' : geomType === 'LineString' ? '#3498db' : '#2ecc71',
+                weight: 3,
+                opacity: 0.8,
+                fillOpacity: 0.4,
+                radius: 6
+            };
+            layerInfo.color = layerInfo.style.color;
+            layerInfo.symbol = '📌';
+            
+            redrawLayer(tableId);
+            openStyleEditor(tableId); // Neu öffnen mit Reset-Werten
+            showSuccess('🔄 Style zurückgesetzt!');
+        }
+        
+        function redrawLayer(tableId) {
+            const layerInfo = tableLayers[tableId];
+            if (!layerInfo) return;
+            
+            // Entferne alten Layer
+            map.removeLayer(layerInfo.layer);
+            
+            // Erstelle neuen Layer mit neuem Style
+            const newLayer = L.layerGroup();
+            
+            layerInfo.features.forEach(feature => {
+                const convertedGeometry = {
+                    type: feature.geometry.type,
+                    coordinates: convertCoordinates(feature.geometry.coordinates)
+                };
+                
+                const props = feature.properties || {};
+                const popupContent = createPopupContent(feature);
+                const style = layerInfo.style;
+                
+                let leafletFeature;
+                
+                if (convertedGeometry.type === 'Point') {
+                    leafletFeature = L.circleMarker(
+                        [convertedGeometry.coordinates[1], convertedGeometry.coordinates[0]], 
+                        {
+                            radius: parseInt(style.radius) || 6,
+                            fillColor: style.color,
+                            color: '#2c3e50',
+                            weight: 1,
+                            opacity: style.opacity,
+                            fillOpacity: style.opacity
+                        }
+                    );
+                } else if (convertedGeometry.type === 'LineString') {
+                    leafletFeature = L.polyline(
+                        convertedGeometry.coordinates.map(coord => [coord[1], coord[0]]),
+                        {
+                            color: style.color,
+                            weight: parseInt(style.weight) || 3,
+                            opacity: style.opacity
+                        }
+                    );
+                } else if (convertedGeometry.type === 'Polygon') {
+                    leafletFeature = L.polygon(
+                        convertedGeometry.coordinates[0].map(coord => [coord[1], coord[0]]),
+                        {
+                            fillColor: style.color,
+                            color: style.color,
+                            weight: parseInt(style.weight) || 2,
+                            opacity: style.opacity,
+                            fillOpacity: style.fillOpacity || 0.4
+                        }
+                    );
+                }
+                
+                if (leafletFeature) {
+                    leafletFeature.bindPopup(popupContent);
+                    newLayer.addLayer(leafletFeature);
+                    leafletFeature.featureData = feature;
+                }
+            });
+            
+            layerInfo.layer = newLayer;
+            
+            // Füge zur Karte hinzu wenn sichtbar
+            if (layerInfo.visible) {
+                map.addLayer(newLayer);
+            }
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 3000);
+        }
+        
+        console.log('🗺️ INTERLIS1 WebGIS Professional v2.0 bereit!');
+        console.log('✨ Features: Suche, Tabelle, Export, Koordinaten, Messwerkzeuge');
+    </script>
+</body>
+</html>
