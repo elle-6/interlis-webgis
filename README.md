@@ -1,44 +1,75 @@
 # 🗺️ INTERLIS1 WebGIS Professional
 
-Ein interaktives WebGIS-Tool zur Visualisierung und Analyse von Schweizer Vermessungsdaten direkt im Browser - ohne Installation, ohne Server.
+Ein komplettes Tool-Set zur Verarbeitung und Visualisierung von Schweizer Vermessungsdaten: Python-Parser für INTERLIS1-Dateien (.itf) + interaktives WebGIS im Browser.
 
+## 📦 Komponenten
 
-## 🚀 Features
+### 1. 🐍 Python Parser (`parser.py`)
+Konvertiert INTERLIS1-Dateien zu WebGIS-kompatiblem GeoJSON.
 
-- **📁 Drag & Drop**: GeoJSON-Dateien einfach laden
-- **🔍 Intelligente Suche**: Durchsucht alle Feature-Attribute
-- **📊 Attribut-Tabelle**: Sortierbar mit CSV-Export
-- **🎨 Style-Editor**: Individuelle Farben, Grössen & Symbole pro Layer
-- **💾 Export-Funktionen**: GeoJSON, CSV, JSON-Statistiken
-- **📍 LV95-Koordinaten**: Live-Anzeige beim Hover (Schweizer Landeskoordinaten)
-- **📐 Messwerkzeuge**: Distanzen und Flächen messen
-- **✨ Feature-Highlighting**: Gefundene Objekte werden auf Karte und Tabelle hervorgehoben
-- **🗂️ Layer-Management**: Automatische Gruppierung nach Themen
+### 2. 🌐 WebGIS (`index.html`)
+Interaktive Karten-Anwendung zur Visualisierung und Analyse.
 
-## 📋 Anwendungsfälle
+---
 
-- **Qualitätskontrolle**: Schnelle Prüfung von Vermessungsdaten
-- **Objekt-Suche**: Fixpunkte, Grenzpunkte, Gebäude schnell finden
-- **Visualisierung**: Amtliche Vermessung interaktiv darstellen
-- **Datenexport**: Gefilterte Daten für CAD/GIS exportieren
-- **Präsentationen**: Geodaten anschaulich zeigen
+## 🔄 Workflow
 
-## 🎯 Zielgruppe
+```
+.itf Datei (INTERLIS1)
+        ↓
+   interlis1_webgis_parser_fixed.py
+        ↓
+webgis_data.geojson
+        ↓
+   index.html (Browser)
+        ↓
+   Interaktive Karte
+```
 
-- 📐 Vermessungsingenieure
-- 🏗️ Bauingenieure
-- 🗺️ GIS-Techniker
-- 🏛️ Gemeinden & Kantone
-- 👨‍💻 Geodaten-Entwickler
+---
 
-## 🚀 Quick Start
+## 🐍 Python Parser
 
-1. **Öffne** `index.html` im Browser
-2. **Ziehe** deine GeoJSON-Datei auf das Upload-Feld
-3. **Fertig!** Die Daten werden automatisch auf der Karte dargestellt
+### Features
+- **INTERLIS1 Parsing**: Verarbeitet .itf-Dateien mit LV95-Koordinaten (EPSG:2056)
+- **Geometrie-Typen**: Punkte, Linien und korrekt geschlossene Polygone
+- **GeoJSON Export**: WebGIS-kompatible Ausgabe
+- **Layer-Management**: Automatische Gruppierung nach Themen
+- **Styling**: Automatische Farben & Symbole-Zuweisung
+- **Tabellen-Übersicht**: Metadaten zu allen INTERLIS-Tabellen
 
-### Erwartetes GeoJSON-Format
+### Installation
 
+```bash
+# Repository klonen
+git clone https://github.com/DEIN-USERNAME/interlis-webgis.git
+cd interlis-webgis
+
+# Abhängigkeiten installieren (falls nötig)
+pip install -r requirements.txt
+```
+
+### Verwendung
+
+```bash
+# INTERLIS1 zu GeoJSON konvertieren
+python interlis1_webgis_parser_fixed.py input.itf
+
+# Output: webgis_data.geojson
+```
+
+### Input-Format (.itf)
+```
+INTERLIS 1.0
+MODL DM01AVCH24D
+TOPI Bodenbedeckung
+TABL BoFlaeche
+OBJE 1234
+GEOS 2600000.000 1200000.000
+...
+```
+
+### Output-Format (GeoJSON)
 ```json
 {
   "type": "FeatureCollection",
@@ -50,9 +81,8 @@ Ein interaktives WebGIS-Tool zur Visualisierung und Analyse von Schweizer Vermes
     },
     "properties": {
       "table": "Lagefixpunkte2",
-      "layer_name": "Lagefixpunkte 2. Ordnung",
+      "layer_name": "Lagefixpunkte",
       "layer_group": "Fixpunkte",
-      "obj_id": "12345",
       "color": "#e74c3c",
       "symbol": "🎯"
     }
@@ -60,50 +90,120 @@ Ein interaktives WebGIS-Tool zur Visualisierung und Analyse von Schweizer Vermes
 }
 ```
 
-## 📖 Bedienung
+---
 
-### 🔍 Suche verwenden
-1. Suchbegriff eingeben (z.B. Punkt-ID, Name)
-2. **Enter** drücken oder **Suchen** klicken
-3. Auf Ergebnis klicken → Zoom & Highlight
+## 🌐 WebGIS
 
-### 📊 Attribut-Tabelle
-1. Button **📊 Tabelle** klicken
-2. Auf Spalten-Header klicken zum Sortieren (▲▼)
-3. Auf Zeile klicken → Zoom zum Feature
-4. **CSV Export** für Excel/Calc
+### Features
 
-### 🎨 Layer stylen
-1. **🎨** Symbol neben Layer klicken
-2. Farbe, Grösse, Symbol, Deckkraft anpassen
-3. **✅ Anwenden** klicken
-4. Änderungen sind sofort sichtbar
+- **📁 Drag & Drop**: GeoJSON-Dateien einfach laden
+- **🔍 Intelligente Suche**: Durchsucht alle Feature-Attribute
+- **📊 Attribut-Tabelle**: Sortierbar mit CSV-Export
+- **🎨 Style-Editor**: Individuelle Farben, Größen & Symbole pro Layer
+- **💾 Export-Funktionen**: GeoJSON, CSV, JSON-Statistiken
+- **📍 LV95-Koordinaten**: Live-Anzeige beim Hover
+- **📐 Messwerkzeuge**: Distanzen und Flächen messen
+- **✨ Feature-Highlighting**: Objekte auf Karte und Tabelle hervorheben
+- **🗂️ Layer-Management**: Automatische Gruppierung
 
-### 💾 Daten exportieren
-1. Button **💾 Export** klicken
-2. Format wählen:
-   - **GeoJSON** (alle Features)
-   - **GeoJSON** (nur sichtbare Layer)
-   - **CSV** (Attribut-Tabelle)
-   - **JSON** (Statistiken)
+### Verwendung
+
+```bash
+# 1. GeoJSON mit Parser erstellen
+python interlis1_webgis_parser_fixed.py meine_daten.itf
+
+# 2. WebGIS öffnen
+# Öffne index.html im Browser
+
+# 3. webgis_data.geojson auf Upload-Feld ziehen
+
+# 4. Fertig!
+```
+
+### Bedienung
+
+**🔍 Suche:**
+- Suchbegriff eingeben → Enter → Ergebnis anklicken
+
+**📊 Tabelle:**
+- Button "📊 Tabelle" → Spalten sortieren → Zeile anklicken
+
+**🎨 Styling:**
+- 🎨 neben Layer klicken → Anpassen → ✅ Anwenden
+
+**💾 Export:**
+- Button "💾 Export" → Format wählen
+
+---
+
+## 📁 Projektstruktur
+
+```
+interlis-webgis/
+├── interlis1_webgis_parser_fixed.py   # INTERLIS1 → GeoJSON Konverter
+├── index.html                         # WebGIS-Anwendung
+├── README.md                          # Diese Dokumentation
+├── 7-knonau-gds.itf                   # Beispiel-Dateien
+└── webgis_data.geojson                # Beispiel-Dateien
+
+```
+
+---
+
+## 🎯 Anwendungsfälle
+
+- **Qualitätskontrolle**: Vermessungsdaten schnell prüfen
+- **Objekt-Suche**: Fixpunkte, Grenzpunkte finden
+- **Visualisierung**: Amtliche Vermessung darstellen
+- **Datenexport**: Gefilterte Daten für CAD/GIS
+- **Präsentationen**: Geodaten anschaulich zeigen
+
+## 👥 Zielgruppe
+
+- 📐 Vermessungsingenieure
+- 🏗️ Bauingenieure
+- 🗺️ GIS-Techniker
+- 🏛️ Gemeinden & Kantone
+- 👨‍💻 Geodaten-Entwickler
+
+---
 
 ## 🛠️ Technologie
 
-- **Leaflet 1.9.4**: Interaktive Karten-Bibliothek
-- **LV95 ↔ WGS84**: Automatische Koordinaten-Transformation
-- **Client-Side**: Läuft komplett im Browser
-- **Keine Installation**: Einfach HTML-Datei öffnen
+### Python Parser
+- Python 3.8+
+- LV95-Koordinaten (EPSG:2056)
+- GeoJSON-Standard
 
-## 📦 Installation
+### WebGIS
+- Leaflet 1.9.4
+- LV95 ↔ WGS84 Transformation
+- Client-Side (keine Server nötig)
 
-Keine Installation nötig! Einfach die `index.html` in einem modernen Browser öffnen.
+---
 
-### Für lokale Entwicklung (optional):
+## 🚀 Quick Start (Kompletter Workflow)
+
 ```bash
-# Lokaler Server
+# 1. Repository klonen
+git clone https://github.com/DEIN-USERNAME/interlis-webgis.git
+cd interlis-webgis
+
+# 2. INTERLIS-Datei konvertieren
+python parser.py deine_daten.itf
+
+# 3. WebGIS starten
 python -m http.server 8000
-# Öffne: http://localhost:8000
+
+# 4. Browser öffnen
+# http://localhost:8000
+
+# 5. webgis_data.geojson auf die Seite ziehen
+
+# Fertig! 🎉
 ```
+
+---
 
 ## 📄 Lizenz
 
@@ -111,4 +211,6 @@ MIT License - Frei verwendbar für kommerzielle und private Projekte.
 
 ---
 
-*Optimiert für Schweizer Vermessungsdaten | LV95 | INTERLIS*
+**Made with ❤️ for Swiss Geodata** 🇨🇭
+
+*INTERLIS1 | LV95 | Amtliche Vermessung*
