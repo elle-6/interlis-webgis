@@ -1,0 +1,22 @@
+# INTERLIS1 WebGIS - Python Dependencies
+
+# Keine externen Abhängigkeiten nötig, wenn du nur Standard-Bibliotheken verwendest
+# Falls du zusätzliche Pakete brauchst, hier einige Vorschläge:
+
+# Für erweiterte GeoJSON-Verarbeitung (optional)
+# geojson==3.0.1
+
+# Für Koordinaten-Transformationen (optional)
+# pyproj==3.6.1
+
+# Für Shapefile-Support (optional)
+# fiona==1.9.5
+# shapely==2.0.2
+
+# Für Datenverarbeitung (optional)
+# pandas==2.1.3
+# geopandas==0.14.1
+
+# Für bessere CLI (optional)
+# click==8.1.7
+# rich==13.7.0
